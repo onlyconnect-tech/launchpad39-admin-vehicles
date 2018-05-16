@@ -1,0 +1,13 @@
+# from launchpad39-dashboard
+public
+
+admin_web/bower_components
+
+node_modules
+
+nohup.out
+
+.env
+
+*.log
+

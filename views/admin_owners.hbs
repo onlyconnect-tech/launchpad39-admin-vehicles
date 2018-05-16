@@ -1,0 +1,42 @@
+<h1>Admin Owners</h1>
+
+{{#each composedListOwnerCodes}}
+      <h2>Owner: <span class="label label-default">{{key}}</span></h2>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>QUEUE</th>
+            <th>DRONE TYPE</th>
+            <th>STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+      {{#each values}}
+        <tr>
+          <td>{{queue_name}}</td>
+          <td>{{drone_type}}</td>
+          <td>
+                
+                {{#if is_active }}
+                    <div  class="line-enabled-item">
+                      <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
+                      ACTIVE
+                    </div>    
+                {{else}}
+                    <div  class="line-disabled-item">
+                      <span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span> 
+                      STOPPED
+                    </div>
+                {{/if}}
+                
+          </td>
+        </tr>
+      {{/each}}
+      </tbody>
+  </table>
+  <a href="/admin/add_vehicle/{{key}}"><button type="button" class="btn">Add Vehicle</button></a>
+{{/each}}
+
+<hr>
+
+<a class="btn btn-default" href="/admin/add_owner" role="button">Add owner</a>

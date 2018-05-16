@@ -1,0 +1,55 @@
+<h1>Add OWNER</h1>
+
+<div class="row" id="formErrors">
+      <div class="col-sm-12">
+              {{#each errors}}
+              <p class="bg-danger">{{this}}</p>
+              {{/each}}
+      </div>
+</div>
+      
+<form action="/admin/add_owner" method="POST">
+            <div class="form-group">
+                    <label for="ownerCode">Owner CODE*</label>
+                    <input type="text" class="form-control" id="ownerCode" name="owner_code" placeholder="Code">
+            </div>
+            <div class="form-group">
+                    <label for="password">Password*</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Code">
+            </div>
+            <div class="form-group">
+                    <label for="password_confirm">Password confirm*</label>
+                    <input type="password" class="form-control" id="password_confirm" name="password_confirm" placeholder="Code">
+            </div>
+            <div class="form-group">
+                    <label for="ownerName">Owner Name*</label>
+                    <input type="text" class="form-control" id="ownerName" name="owner_name" placeholder="Owner Name">
+            </div>
+            
+            <button type="submit" class="btn btn-default">Add</button>
+</form>
+
+<h2>OWNERS</h2>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>CODE</th>
+      <th>NAME</th>
+      <th>DATA INS</th>
+      <th>DATA MOD</th>
+      <th>ACTION</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each owners}}
+      <tr>
+        <td>{{owner_code}}</td>
+        <td>{{owner_name}}</td>
+        <td>{{formatDate date_inst}}</td>
+        <td> - </td>
+        <td><a href="/admin/mod_pwd/{{id}}"><button class="btn bth-default">MOD PWD</button></td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

@@ -1,0 +1,110 @@
+
+<h1>LIST VEHICLES</h1>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>QUEUE</th>
+      <th>DRONE TYPE</th>
+      <th>OWNER</th>
+      <th>STATUS</th>
+      <th>ACTION</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each vehicles}}
+      <tr>
+        <td>{{queue_name}}</td>
+        <td>{{drone_type}}</td>
+        <td>
+          <span class="label label-default"   data-toggle="tooltip" data-placement="top"  title="{{owners_name}}">{{owners_code}}</span>
+        </td>
+        <td>
+               
+              {{#if is_active }}
+                  <div  class="line-enabled-item">
+                    <span class="glyphicon glyphicon-ok-circle" aria-hidden="true"></span>
+                    ACTIVE
+                  </div>    
+              {{else}}
+                  <div  class="line-disabled-item">
+                    <span class="glyphicon glyphicon-ban-circle" aria-hidden="true"></span> 
+                    STOPPED
+                  </div>
+              {{/if}}
+              
+        </td>
+        <td>
+            <a href="/admin/change_status_vehicle/{{id}}">
+              
+              {{#if is_active }}
+                  <button  type="button" class="btn btn-warning">Disable</button>
+              {{else}}
+                  <button  type="button" class="btn  btn-info">Enable </button>
+              {{/if}}
+            </a> 
+            <!--
+            <a href="/remove_vehicle/{{id}}">
+            -->
+            <button  type="button" class="btn btn-danger" data-toggle="modal" data-target="#askConfirmRemoveModal" 
+                data-id-vehicle="{{id}}" data-queue-vehicle="{{queue_name}}">Remove</button>
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<a class="btn btn-default" href="/admin/add_vehicle" role="button">Add vehicle</a>
+
+<div class="modal fade" id="askConfirmRemoveModal" tabindex="-1" role="dialog" aria-labelledby="askConfirmRemoveModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="askConfirmRemoveModalLabel">Ask confirm</h4>
+      </div>
+      <div class="modal-body">
+        <p id='confirmQuestion'>confirm question</p>
+        <!--
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">Recipient:</label>
+            <input type="text" class="form-control" id="recipient-name">
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="control-label">Message:</label>
+            <textarea class="form-control" id="message-text"></textarea>
+          </div>
+        </form>
+        -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <a id="linkRemoveVehicleAction" href="">
+          <button type="button" class="btn btn-primary">Remove</button>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+  window.onload = function() {
+    
+    $('#askConfirmRemoveModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var idVehicle = button.data('id-vehicle') // Extract info from data-* attributes
+      var queueVehicle = button.data('queue-vehicle')
+
+      // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+      // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+      var modal = $(this)
+
+      modal.find('#confirmQuestion').text('Are you sure to remove vehicle on queue ' + queueVehicle + '?')
+      modal.find('#linkRemoveVehicleAction').attr('href', '/admin/remove_vehicle/' + idVehicle);
+    });
+
+  };
+
+</script>    

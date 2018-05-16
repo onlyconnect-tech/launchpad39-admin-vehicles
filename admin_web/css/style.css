@@ -1,0 +1,18 @@
+body {
+  padding-top: 50px;
+}
+
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+.line-enabled-item {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+}
+
+.line-disabled-item {
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+}
