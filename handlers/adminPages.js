@@ -68,7 +68,7 @@ exports.doAddVehicle = function (request, reply) {
         console.log('OK queueName:', queueName, ', droneType:', droneType, ', idOwner:', idOwner);
 
         droneInfo.insertDroneInfo(queueName, droneType, idOwner).then(function resolve() {
-            return reply.redirect('/list_vehicles');
+            return reply.redirect('/admin/list_vehicles');
         }, function reject(err) {
             return reply({ err: err});
         });
@@ -130,8 +130,7 @@ exports.removeVehicle = function (request, reply) {
     var id = request.params.id;
 
     droneInfo.removeDroneInfo(id).then(function resolve() {
-            console.log('CALLED RESOLVE!!');
-            return reply.redirect('/list_vehicles');
+            return reply.redirect('/admin/list_vehicles');
         }, function reject(err) {
             return reply({ err: err});
         });
@@ -143,8 +142,7 @@ exports.changeStatusVehicle = function(request, reply) {
         var id = request.params.id;
         
         droneInfo.changeStatusVehicle(id).then(function resolve() {
-            console.log('CALLED RESOLVE!!');
-            return reply.redirect('/list_vehicles');
+            return reply.redirect('/admin/list_vehicles');
         }, function reject(err) {
             return reply({ err: err});
         });
@@ -199,7 +197,7 @@ exports.doAddOwner = function (request, reply) {
                 }
 
                 owner.addOwner(ownerCode, ownerName, hashPassword).then( function resolve(){
-                    return reply.redirect('add_owner');
+                    return reply.redirect('/admin/add_owner');
                 }, function reject(err) {
                     return reply(new Error(err));
                 });
