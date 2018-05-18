@@ -1,5 +1,6 @@
 'use strict';
 
+const Promise = require('bluebird');
 const bcrypt = require('bcrypt-nodejs');
 
 const Owners = require('../model/owner');
@@ -12,7 +13,7 @@ const uuidV1 = require('uuid/v1');
 const ownerDAO = new Owners();
 const sessions = new Sessions();
 
-exports.checkLogin = function(request, reply) {
+exports.checkLogin = function(request, h) {
 
     // username and password
     // check authentication 
@@ -23,40 +24,48 @@ exports.checkLogin = function(request, reply) {
     console.log('username:', username);
     console.log('password:', password);
 
-    ownerDAO.getOwner(username).then(function resolve(owner) {
+    return ownerDAO.getOwner(username).then(function resolve(owner) {
         if(!owner) {
             console.log('NOT FOUND USER WITH username:', username);
             // try Boom
-            return reply({ statusCode: '400', validation: 'FAILURE' });
+            return { statusCode: '400', validation: 'FAILURE' };
         }
+        
+        return new Promise(function(resolve, reject) {
 
-        bcrypt.compare(password, owner.password, function(err, res) {
+            bcrypt.compare(password, owner.password, function(err, res) {
 
             if(err) {
                 console.error('', err);
-                return reply({ statusCode: '400', validation: 'FAILURE' });
+                reject({ statusCode: '400', validation: 'FAILURE' });
             }
 
             if(res) {
                 console.log('OK VALIDATION PASSWORD!!!');
                 var uuid = uuidV1();
 
-                RedisService.putInSession(uuid, owner.owner_code);
-                sessions.insertSession(uuid, owner.owner_code);
-                
-                return reply({ statusCode: '200', validation: 'OK', clientID: uuid, customerID: owner.owner_code });
+                // RedisService.putInSession(uuid, owner.owner_code);
+                // sessions.insertSession(uuid, owner.owner_code);
+                console.log("SONO QUI");
+                var obj = { statusCode: '200', validation: 'OK', clientID: uuid, customerID: owner.owner_code };
+                return resolve(obj);
             }
 
             console.warn('NO VALIDATION PASSWORD');
-            return reply({ statusCode: '400', validation: 'FAILURE' });
+            return resolve({ statusCode: '400', validation: 'FAILURE' });
         
         });
 
-        
+       });
+               
+       /*
+       var uuid = uuidV1();
+       return { statusCode: '200', validation: 'OK', clientID: uuid, customerID: "demo" };
+        */
         
     }, function reject(err) {
         console.error('ERROR:', err);
-        return reply({ statusCode: '400', validation: 'FAILURE' });
+        return { statusCode: '400', validation: 'FAILURE' };
     });
     
 };
@@ -70,7 +79,7 @@ exports.handleLogout = function (request, reply) {
     // update session.setLogout
     sessions.updateSessionOnLogout(request.params.id);
 
-    return reply({ status: 'OK'});
+    return { status: 'OK'};
 
     
 };
@@ -84,7 +93,7 @@ exports.handleUpdateSession = function (request, reply) {
     // update session.setLogout
     sessions.updateSession(request.params.id);
 
-    return reply({ status: 'OK'});
+    return { status: 'OK'};
 
     
 };

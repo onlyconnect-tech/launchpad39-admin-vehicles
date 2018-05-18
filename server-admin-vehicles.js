@@ -2,8 +2,7 @@
 
 const Hapi = require('hapi');
 
-const server = new Hapi.Server();
-server.connection({ port: 3000, host: 'localhost' });
+const server = new Hapi.Server({ port: 3000, host: 'localhost' });
 
 var options = { reporters: { myConsoleReporter: 
         [{
@@ -14,6 +13,8 @@ var options = { reporters: { myConsoleReporter:
             module: 'good-console'
         }, 'stdout'] }
     };
+
+/*
 
 server.ext('onPreResponse', (request, reply) => {
 
@@ -32,17 +33,21 @@ server.ext('onPreResponse', (request, reply) => {
     reply.continue();
 });
 
+*/
+
+/*
 server.register([ 
     require('inert'), 
     require('vision'), { 
         register: require('good'), 
         options 
     } 
-], (err) => {
+]);
+*/
 
-    if(err) {
-        throw err;
-    }
+const start = async () => {
+
+    await server.register([require('inert'), require('vision')]);
 
     server.views({
         engines: {
@@ -59,15 +64,17 @@ server.register([
 
     server.route(require('./routes'));
 
-    server.start((err) => {
+    await server.start();
+    console.log(`Server running at: ${server.info.uri}`);
+};
 
-        if (err) {
-            throw err;
-        }
+process.on('unhandledRejection', (err) => {
 
-        console.log(`Server running at: ${server.info.uri}`);
-    });
-
+    console.log(err);
+    process.exit(1);
 });
+
+
+start();
 
 
