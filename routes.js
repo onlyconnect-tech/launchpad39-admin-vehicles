@@ -26,7 +26,7 @@ module.exports = [{
 }, {
     method: 'POST',
     path: '/admin/add_vehicle',
-    config: {
+    options: {
         payload: {
             output: 'data'
         },
@@ -51,7 +51,7 @@ module.exports = [{
     method: 'GET',
     path: '/admin/remove_vehicle/{id}',
     handler: AdminPages.removeVehicle,
-    config: {
+    options: {
         validate: {
             params: {
                 id: Joi.number().integer().min(1)
@@ -62,7 +62,7 @@ module.exports = [{
     method: 'GET',
     path: '/admin/change_status_vehicle/{id}',
     handler: AdminPages.changeStatusVehicle,
-    config: {
+    options: {
         validate: {
             params: {
                 id: Joi.number().integer().min(1)
@@ -77,7 +77,7 @@ module.exports = [{
     method: 'POST',
     path: '/admin/add_owner',
     handler: AdminPages.doAddOwner,
-    config: {
+    options: {
         payload: {
             output: 'data'
         },
@@ -123,7 +123,7 @@ module.exports = [{
     path:'/do_authentication', 
     handler: Pages.checkLogin
     }, {
-        config: {
+        options: {
             cors: true,
             validate: {
                 params: {
@@ -136,7 +136,7 @@ module.exports = [{
         handler: Pages.handleLogout
 
         }, {
-            config: {
+            options: {
                 cors: true,
                 validate: {
                     params: {

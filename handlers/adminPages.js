@@ -12,15 +12,15 @@ const droneInfo = new DroneInfo();
 const owner = new Owner();
 
 exports.home = function( request, reply) {
-    reply.view('home');
+    return reply.view('home');
 };
 
 exports.listVehicles = function (request, reply) {
 
-    droneInfo.getListDroneInfo().then(function resolve(results) {
-        reply.view('list_vehicles', {vehicles: results});
+    return droneInfo.getListDroneInfo().then(function resolve(results) {
+        return reply.view('list_vehicles', {vehicles: results});
     }, function reject(err) {
-        reply({err: err});
+        return {err: err};
     });   
 };
 
@@ -28,7 +28,7 @@ exports.addVehicleView = function (request, reply) {
 
     var ownerCode = request.params.ownerCode;
 
-    Promise.all([owner.getListOwners(), droneInfo.getVehicleTypes()])
+    return Promise.all([owner.getListOwners(), droneInfo.getVehicleTypes()])
     .then(function(results){
 
         console.log(results);
@@ -46,7 +46,7 @@ exports.addVehicleView = function (request, reply) {
 
             if(filtered.length != 1) {
                 // return error
-                return reply({ err: 'NO CODE: ' + ownerCode });
+                return { err: 'NO CODE: ' + ownerCode };
             } else {
                 idOwner = filtered[0].id;
             }
@@ -55,7 +55,7 @@ exports.addVehicleView = function (request, reply) {
         return reply.view('add_vehicle', { listOwners: listOwners, vehiclesTypes: results[1], 
             ownerCode: ownerCode, idOwner: idOwner });
     }, function(err) {
-        return reply({ err: err });
+        return { err: err };
     });
 
 };
@@ -67,20 +67,20 @@ exports.doAddVehicle = function (request, reply) {
 
         console.log('OK queueName:', queueName, ', droneType:', droneType, ', idOwner:', idOwner);
 
-        droneInfo.insertDroneInfo(queueName, droneType, idOwner).then(function resolve() {
+        return droneInfo.insertDroneInfo(queueName, droneType, idOwner).then(function resolve() {
             return reply.redirect('/admin/list_vehicles');
         }, function reject(err) {
-            return reply({ err: err});
+            return reply.response({ err: err}).type('application/json').code(400);
         });
         
     };
 
-exports.doAddVehicleFail = function (request, reply, source, error) {
+exports.doAddVehicleFail = function (request, reply, error) {
 
     const errors = {};
-    const details = error.data.details;
+    const details = error.details;
 
-    console.log(details);
+    console.log("--->> ", details);
 
     for (let i = 0; i < details.length; ++i) {
         if (!errors.hasOwnProperty(details[i].path)) {
@@ -91,7 +91,7 @@ exports.doAddVehicleFail = function (request, reply, source, error) {
     // check 
     console.log('***: ', request.payload.isFromOwner, request.payload.id_owner);
 
-    Promise.all([owner.getListOwners(), droneInfo.getVehicleTypes()])
+    return Promise.all([owner.getListOwners(), droneInfo.getVehicleTypes()])
                     .then(function(results){
 
                         console.log(results);
@@ -111,28 +111,30 @@ exports.doAddVehicleFail = function (request, reply, source, error) {
 
                             if(filtered.length != 1) {
                                 // return error
-                                return reply({ err: 'NO CODE: ' + ownerCode });
+                                return { err: 'NO CODE: ' + ownerCode };
                             } else {
                                 idOwner = filtered[0].id;
                             }
                         }
+                        
+                        console.log("-------------------------------");
 
                         return reply.view('add_vehicle', { listOwners: listOwners, vehiclesTypes: results[1], 
                                 errors: errors,
-                                values: request.payload, ownerCode:  ownerCode, idOwner: idOwner });
+                                values: request.payload, ownerCode:  ownerCode, idOwner: idOwner }).code(400).takeover();
                        
                     }, function(err) {
-                        return reply({ err: err }).code(400);
+                        return reply.response({ err: err }).type('application/json').code(400).takeover();
                     });
 };
 
 exports.removeVehicle = function (request, reply) {
     var id = request.params.id;
 
-    droneInfo.removeDroneInfo(id).then(function resolve() {
+    return droneInfo.removeDroneInfo(id).then(function resolve() {
             return reply.redirect('/admin/list_vehicles');
         }, function reject(err) {
-            return reply({ err: err});
+            return reply.response({ err: err}).code(400);
         });
     
     
@@ -144,16 +146,16 @@ exports.changeStatusVehicle = function(request, reply) {
         droneInfo.changeStatusVehicle(id).then(function resolve() {
             return reply.redirect('/admin/list_vehicles');
         }, function reject(err) {
-            return reply({ err: err});
+            return reply.response({ err: err}).code(400);
         });
     };
 
 exports.addOwnerView = function (request, reply) {
         
-        owner.getListOwners().then(function resolve(owners) {
+        return owner.getListOwners().then(function resolve(owners) {
             return reply.view('add_owner', { owners: owners });
         }, function reject(err) {
-            return reply({ err: err });
+            return reply.response({ err: err }).code(400);
         });
         
     };
@@ -163,7 +165,7 @@ exports.doAddOwner = function (request, reply) {
         var ownerName = request.payload.owner_name;
         var password   = request.payload.password;
 
-        owner.checkIfYetSomeOwnerCode(ownerCode).then( function resolve(ifYet){
+        return owner.checkIfYetSomeOwnerCode(ownerCode).then( function resolve(ifYet){
             
             if(ifYet) {
                 //
@@ -171,98 +173,101 @@ exports.doAddOwner = function (request, reply) {
                 const errors = {};
                 errors['owner_code'] = 'OWNER YET';
 
-                owner.getListOwners().then(function resolve(owners) {
-                    return reply.view('add_owner', {
-                    errors: errors,
-                    values: request.payload,
-                    owners: owners
-                }).code(400);
+                return owner.getListOwners().then(function resolve(owners) {
+                                return reply.view('add_owner', {
+                                errors: errors,
+                                values: request.payload,
+                                owners: owners
+                            }).code(400);
                 }, function reject(err) {
-                    return reply(new Error(err));
+                    return new Error(err);
                 });
             } 
             
-            console.log(bcrypt);
             // var salt = bcrypt.genSaltSync(10);
 
             // same as the server
             var salt = '$2a$10$IbCAY0aE7VjKGL9WhF/ezu';
 
-            bcrypt.hash(password, salt, null, function(err, hashPassword) {
-                // Store hash in your password DB.
+            return new Promise(function(resolve, reject) {
 
-                if(err) {
-                    console.log('Error on bcrypt.hash: ', err);
-                    return reply(new Error(err));
-                }
-
-                owner.addOwner(ownerCode, ownerName, hashPassword).then( function resolve(){
-                    return reply.redirect('/admin/add_owner');
-                }, function reject(err) {
-                    return reply(new Error(err));
+                bcrypt.hash(password, salt, null, function(err, hashPassword) {
+                    // Store hash in your password DB.
+    
+                    if(err) {
+                        console.log('Error on bcrypt.hash: ', err);
+                        return reject(new Error(err));
+                    }
+                    
+                    
+                    owner.addOwner(ownerCode, ownerName, hashPassword).then( function resolveI(){
+                        return resolve(reply.redirect('/admin/add_owner'));
+                    }, function rejectI(err) {
+                        return reject(new Error(err));
+                    });
                 });
+
             });
-            
 
         }, function error(err) {
-            return reply(new Error(err));
+            return new Error(err);
         });
 
         
         
     };
 
-exports.doAddOwnerFail = function (request, reply, source, error) {
+exports.doAddOwnerFail = function (request, reply, error) {
 
-                const errors = {};
-                const details = error.data.details;
+        const errors = {};
+        const details = error.details;
 
-                console.log(details);
+        console.log(details);
 
-                for (let i = 0; i < details.length; ++i) {
-                    if (!errors.hasOwnProperty(details[i].path)) {
-                        errors[details[i].path] = details[i].message;
-                    }
-                }
+        for (let i = 0; i < details.length; ++i) {
+            if (!errors.hasOwnProperty(details[i].path)) {
+                errors[details[i].path] = details[i].message;
+            }
+        }
 
-                owner.getListOwners().then(function resolve(owners) {
-                    return reply.view('add_owner', {
+        return owner.getListOwners().then(function resolve(owners) {
+                return reply.view('add_owner', {
                     errors: errors,
                     values: request.payload,
                     owners: owners
-                }).code(400);
+                }).code(400).takeover();
             
         }, function reject(err) {
             console.error('owner.getListOwners():', err);
-            return reply(new Error(err));
+            return reply.response(new Error(err)).code(400).takeover();
         });
 
 };
 
 exports.adminOwnersView = function (request, reply) {
     
-    owner.getListOwners().then(function resolve(owners) {
+    return owner.getListOwners().then(function resolve(owners) {
         var listOwnerCodes = owners.map(function(elem) {
             return elem.owner_code;
         });
 
-        droneInfo.getListDroneInfo().then(function resolve(results) {
+        return droneInfo.getListDroneInfo().then(function resolve(results) {
 
-        // { id: elem.id, queue_name: elem.queue_name, drone_type: elem.drone_type, owners_code: elem.owners_code, owners_name: elem.owners_name, is_active: elem.is_active }
-        var mapOwnersVehicles = new Map();
-        results.forEach(function(element) {
+            // { id: elem.id, queue_name: elem.queue_name, drone_type: elem.drone_type, owners_code: elem.owners_code, owners_name: elem.owners_name, is_active: elem.is_active }
+            var mapOwnersVehicles = new Map();
+            results.forEach(function(element) {
 
-            var mapElem = mapOwnersVehicles.get(element.owners_code);
-            
-            if(!mapElem) {
-                let table = [];
+                var mapElem = mapOwnersVehicles.get(element.owners_code);
+                
+                if(!mapElem) {
+                    let table = [];
 
-                table.push(element);
-                mapOwnersVehicles.set(element.owners_code, table);
-            } else {
-                mapElem.push(element);
-            }
-        }, this);
+                    table.push(element);
+                    mapOwnersVehicles.set(element.owners_code, table);
+                } else {
+                    mapElem.push(element);
+                }
+            }, this);
 
             var composedListOwnerCodes = [];
 
@@ -274,11 +279,11 @@ exports.adminOwnersView = function (request, reply) {
                 return { key: elem, values: values};
             });
 
-            reply.view('admin_owners', { composedListOwnerCodes: composedListOwnerCodes, 
+            return reply.view('admin_owners', { composedListOwnerCodes: composedListOwnerCodes, 
                 mapOwnersVehicles: mapOwnersVehicles });
         }, function reject(err) {
             console.error('droneInfo.getListDroneInfo():', err);
-            reply(new Error(err));
+            return new Error(err);
         });   
     
 
